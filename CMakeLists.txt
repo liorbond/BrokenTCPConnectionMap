@@ -8,7 +8,7 @@ file(GLOB SOURCE_FILES
     "*.c"
 )
 
-SET(GCC_COVERAGE_COMPILE_FLAGS "-Werror -Wall -Wextra")
+SET(GCC_COVERAGE_COMPILE_FLAGS "-Werror -Wall -Wextra -g")
 add_definitions(${GCC_COVERAGE_COMPILE_FLAGS})
 
 add_executable(BrokenTCPConnectionMap ${SOURCE_FILES})

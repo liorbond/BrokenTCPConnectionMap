@@ -16,7 +16,7 @@ void map_broken_tcp_connections(char* pcap_path) {
 
 int main(int argc, char** argv) {
     if(ARGUMENTS_ASKED != argc) {
-        printf("Usage: ./BrokenTCPConnectionMap [pcap_path]");
+        printf("Usage: ./BrokenTCPConnectionMap [pcap_path]\n");
         return EXIT_FAILURE;
     }
 

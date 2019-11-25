@@ -16,7 +16,7 @@
  *  [pcap_path] - null terminted string contains the path of the pcap
  *  [handler]  - function pointer from utils pack that handles each packet
  * Return:
- *  INNER_STATUS::SUCCESS if succed
+ *  INNER_STATUS::SUCCESS if succeeded
 */
 INNER_STATUS pcap_walk(char*        pcap_path, 
                        pcap_handler handler);

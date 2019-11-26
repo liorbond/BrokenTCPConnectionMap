@@ -9,7 +9,22 @@
 
 #define TCP_PROTO_NUM 6
 
-typedef struct packet_info_t {
+typedef enum TCP_CONNECTION_STATE {
+  STATE_TCP_ESTABLISHED = 1,
+  STATE_TCP_SYN,
+  STATE_TCP_SYN_RE1,
+  STATE_TCP_SYN_RE2,
+  STATE_TCP_SYN_RE3,
+  STATE_TCP_SYN_RE4,
+  STATE_TCP_SYN_RE5,
+  STATE_TCP_SYN_RE6,
+  STATE_TCP_SYNACK,
+  STATE_TCP_ACK,
+  STATE_TCP_CLOSE,
+} TCP_CONNECTION_STATE;
+
+
+typedef struct packet_info {
     struct iphdr  ip_header;
     struct tcphdr tcp_header;
 } packet_info_t;

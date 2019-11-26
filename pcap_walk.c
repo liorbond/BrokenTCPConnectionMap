@@ -3,8 +3,8 @@
 
 #include "pcap_walk.h"
 
-INNER_STATUS pcap_walk(char*        pcap_path,
-                       pcap_handler handler) {
+INNER_STATUS pcap_walk(const char* const pcap_path,
+                       pcap_handler      handler) {
     pcap_t* pcap_handle;
     char    error_buff[PCAP_ERRBUF_SIZE];
 

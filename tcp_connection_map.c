@@ -9,7 +9,7 @@
  * Return:
  *   bucket index
 */
-static size_t _get_hash(application_stub_t* key) {
+static size_t _get_hash(const application_stub_t* const key) {
     if(NULL == key) {
         printf("ERROR: Bucket resolver received NULL key");
         return HASH_TABLE_SIZE;
@@ -29,21 +29,26 @@ static size_t _get_hash(application_stub_t* key) {
  * Return:
  *  Pointer to bucket
 */
-static application_hash_table_bucket_t* _get_bucket(applications_hash_table_t* table, 
-                                                    application_stub_t*        key) {
+static INNER_STATUS _get_bucket(applications_hash_table_t* const table, 
+                                const application_stub_t* const  key,
+                                application_hash_table_bucket_t** o_bucket) {
+    *o_bucket = NULL;
+
     if(NULL == key) {
         printf("ERROR: Bucket resolver received NULL key");
-        return NULL;
+        return FAILURE;
     }
     
     size_t bucket_idx = _get_hash(key);
 
     if(HASH_TABLE_SIZE == bucket_idx) {
         // Logged @ function
-        return NULL;
+        return FAILURE;
     }
 
-    return &table->hash_table[bucket_idx];
+    *o_bucket = &table->hash_table[bucket_idx];
+
+    return SUCCESS;
 }
 
 /**
@@ -55,49 +60,63 @@ static application_hash_table_bucket_t* _get_bucket(applications_hash_table_t* t
  *  BOOLEAN::TRUE if equal BOOLEAN::FALSE else
  *
 */
-static BOOLEAN _key_compare(application_stub_t* s1,
-                            application_stub_t* s2) {
+static BOOLEAN _key_compare(const application_stub_t* const s1,
+                            const application_stub_t* const s2) {
     return (s1->source_ip == s2->source_ip) &&
            (s1->dest_ip   == s2->dest_ip)   &&
            (s1->dest_port == s2->dest_port);
 }
 
-specific_connection_info_t* get_value(applications_hash_table_t* table,
-                                      application_stub_t*        key) {
-    application_hash_table_bucket_t* bucket = _get_bucket(table, key);  
+INNER_STATUS get_value(applications_hash_table_t* const        table,
+                       const application_stub_t* const         key,
+                       application_information_t**             o_value) {
+    if(NULL == o_value) {
+        printf("ERROR: get_value() out param is NULL");
+        return FAILURE;
+    }
+    
+    *o_value                                = NULL;
+    application_hash_table_bucket_t* bucket = NULL;
+    
+    if(FAILURE == (_get_bucket(table, key, &bucket))) {
+        // Logged @ function
+        return FAILURE;
+    }  
 
     if(NULL == bucket) {
         // Logged @ function
-        return NULL;
+        return FAILURE;
     }
 
     // Find the key in the bucket
     for(size_t i = 0; i < bucket->bucket_size; ++i) {
         if(TRUE == _key_compare(&bucket->bucket_data[i].key, key)) {
-            return bucket->bucket_data[i].value;
+            *o_value = &bucket->bucket_data[i].value;
+            return SUCCESS;
         }
     }
 
-    return NULL;
+    return FAILURE;
 }
 
-INNER_STATUS insert(applications_hash_table_t*  table,
-                    application_stub_t*         key,
-                    specific_connection_info_t* value) {
-    application_hash_table_bucket_t* bucket = _get_bucket(table, key);  
+INNER_STATUS insert(applications_hash_table_t* const        table,
+                    const application_stub_t* const         key,           
+                    const specific_connection_info_t* const value) {
+    application_hash_table_bucket_t* bucket = NULL;
+    
+    if(FAILURE == (_get_bucket(table, key, &bucket))) {
+        // Logged @ function
+        return FAILURE;
+    } 
 
     // Stub wasn't in the table before
-    if(NULL == bucket) {
-        application_hash_table_bucket_t new_bucket;
-        
-        new_bucket.bucket_size = 1;
-        new_bucket.bucket_data = (application_hash_table_node_t*)malloc(sizeof(application_hash_table_node_t));
+    if(NULL == bucket->bucket_data) {        
+        bucket->bucket_size = 1;
+        bucket->bucket_data = (application_hash_table_node_t*)malloc(sizeof(application_hash_table_node_t));
 
-        // Deep copy key and values
-        new_bucket.bucket_data[0].key = *key;
-        new_bucket.bucket_data[0].value[value->source_port] = *value;
-
-        table->hash_table[_get_hash(key)] = new_bucket;
+        // Deep copy key and value
+        bucket->bucket_data[0].key                                   = *key;
+        bucket->bucket_data[0].value.connections[value->source_port] = *value;
     } else {
         if(bucket->bucket_size >= HASH_TABLE_SIZE - 1)
         {
@@ -105,14 +124,14 @@ INNER_STATUS insert(applications_hash_table_t*  table,
             return FAILURE;
         }
 
-        bucket->bucket_data[bucket->bucket_size].value[value->source_port] = *value; 
+        bucket->bucket_data[bucket->bucket_size].value.connections[value->source_port] = *value; 
         bucket->bucket_size++;
     }
 
     return SUCCESS;
 }
 
-void free_table_buckets(applications_hash_table_t* table) {
+void free_table_buckets(applications_hash_table_t* const table) {
     for(size_t i = 0; i < HASH_TABLE_SIZE; ++i) {
         if(NULL != table->hash_table[i].bucket_data && 
            0    != table->hash_table[i].bucket_size) {

@@ -9,7 +9,7 @@
 
 void map_broken_tcp_connections(char* pcap_path) {
     if(SUCCESS != pcap_walk(pcap_path, print_packet_header_handler)) {
-        printf("ERROR: Failed to  map the pcap file %s\n", pcap_path);
+        printf("ERROR: Failed to map the pcap file %s\n", pcap_path);
         return;
     }
 }

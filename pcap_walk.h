@@ -18,7 +18,7 @@
  * Return:
  *  INNER_STATUS::SUCCESS if succeeded
 */
-INNER_STATUS pcap_walk(char*        pcap_path, 
-                       pcap_handler handler);
+INNER_STATUS pcap_walk(const char* const pcap_path, 
+                       pcap_handler      handler);
 
 #endif // __PACKET_WALK__

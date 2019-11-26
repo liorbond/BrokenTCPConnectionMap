@@ -15,8 +15,8 @@
  * Return:
  *  INNER_STATUS::SUCCESS if done
 */
-INNER_STATUS _skip_linux_coocked_layer(unsigned char** io_packet,
-                                       bpf_u_int32*    io_packet_len) {
+static INNER_STATUS _skip_linux_coocked_layer(unsigned char** io_packet,
+                                              bpf_u_int32*    io_packet_len) {
     if(LINUX_COOCKED_LAYER_SIZE >= *io_packet_len) {
         printf("ERROR: Invalid packet\n");
         return FAILURE;
@@ -64,11 +64,13 @@ INNER_STATUS get_tcpip_headers(unsigned char** io_packet,
 INNER_STATUS get_ip_header    (unsigned char** io_packet, 
                                bpf_u_int32*    io_packet_len,
                                struct iphdr*   o_ip_header) {
-    if(sizeof(struct iphdr) >= *io_packet_len) {
+    if(sizeof(struct iphdr) > *io_packet_len) {
+
         printf("NOTICE: Skipping non ip packet\n");
         return FAILURE;
     }
 
+    // No need to memcpy_s since it's already checked
     memcpy((void*)o_ip_header, (void*)*io_packet, sizeof(struct iphdr));
 
     *io_packet     += sizeof(struct iphdr);
@@ -80,11 +82,13 @@ INNER_STATUS get_ip_header    (unsigned char** io_packet,
 INNER_STATUS get_tcp_header   (unsigned char** io_packet, 
                                bpf_u_int32*    io_packet_len,
                                struct tcphdr*  o_tcp_header) {
-    if(sizeof(struct tcphdr) >= *io_packet_len) {
+    if(sizeof(struct tcphdr) > *io_packet_len) {
+
         printf("NOTICE: Skipping non tcp packet\n");
         return FAILURE;
     }
 
+    // No need to memcpy_s since it's already checked
     memcpy((void*)o_tcp_header, (void*)*io_packet, sizeof(struct tcphdr));
 
     *io_packet     += sizeof(struct tcphdr);

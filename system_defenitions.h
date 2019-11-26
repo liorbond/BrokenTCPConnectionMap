@@ -13,5 +13,10 @@ typedef enum INNER_STATUS {
     FAILURE
 } INNER_STATUS;
 
+typedef enum BOOLEAN {
+    TRUE,
+    FALSE
+} BOOLEAN;
+
 
 #endif // __SYSTEM_DEFINITIONS__

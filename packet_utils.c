@@ -3,10 +3,7 @@
 #include "packet_utils.h"
 #include "protocol_headers.h"
 
-/**
- * Local function that prints ip formated as \d{0,3}.\d{0,3}.\d{0,3}.\d{0,3}
-*/
-static void _print_ip(uint32_t ip)
+void print_ip(u_int32_t ip)
 {
     unsigned char bytes[4];
     bytes[0] = ip & 0xFF;
@@ -29,10 +26,10 @@ void print_packet_header_handler(unsigned char*            args,
 
     if(SUCCESS == get_tcpip_headers(&local_packet, local_length, &packet_info)) {
         printf("%d Source ip:", (int)count);
-        _print_ip(ntohl(packet_info.ip_header.saddr));
+        print_ip(ntohl(packet_info.ip_header.saddr));
         printf(" Source port: %d", ntohs(packet_info.tcp_header.th_sport));
         printf(" Dest ip:");
-        _print_ip(ntohl(packet_info.ip_header.daddr));
+        print_ip(ntohl(packet_info.ip_header.daddr));
         printf(" Dest port: %d\n", ntohs(packet_info.tcp_header.th_dport));
     } else {
         printf("Failed packet length is: %d\n", header->len);

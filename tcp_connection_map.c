@@ -1,4 +1,5 @@
 #include "tcp_connection_map.h"
+#include "packet_utils.h"
 #include <stdlib.h>
 
 /**
@@ -47,6 +48,32 @@ static INNER_STATUS _get_bucket(applications_hash_table_t* const table,
     }
 
     *o_bucket = &table->hash_table[bucket_idx];
+
+    return SUCCESS;
+}
+
+/** 
+ * Updates each application bad_connection counter
+ * Params:
+ * [table] - The hash table
+ * Return:
+ *  INNER_STATUS::SUCCESS if worked successfuly.
+*/
+INNER_STATUS update_bad_connections(applications_hash_table_t* const table) {
+    size_t bucket_size = 0;
+    for(size_t i = 0; i < HASH_TABLE_SIZE; ++i) {
+        // Read the bucket size. Best leave it here instead in the for statement because performace issues
+        bucket_size = table->hash_table[i].bucket_size;
+        for(size_t j = 0; j < bucket_size; ++j) {
+            for(size_t p = 0; p < TCP_PORT_MAX; ++p) {
+                // The connection isn't established
+                if(PLACEHOLDER_STATE_NO_CONNECTION < 
+                   table->hash_table[i].bucket_data[j].value.connections[p].timed_connection_state.connectin_state) {
+                       table->hash_table[i].bucket_data[j].value.bad_connections++;
+                }
+            }
+        }
+    }
 
     return SUCCESS;
 }
@@ -131,23 +158,46 @@ INNER_STATUS insert(applications_hash_table_t* const        table,
     return SUCCESS;
 }
 
-INNER_STATUS update_bad_connections(applications_hash_table_t* const table) {
+INNER_STATUS print_table(applications_hash_table_t* const table) {
+    if(SUCCESS != update_bad_connections(table)) {
+        // Logged @ function
+        return FAILURE;
+    }
+
     size_t bucket_size = 0;
+    size_t index       = 1;
+    
     for(size_t i = 0; i < HASH_TABLE_SIZE; ++i) {
         // Read the bucket size. Best leave it here instead in the for statement because performace issues
         bucket_size = table->hash_table[i].bucket_size;
         for(size_t j = 0; j < bucket_size; ++j) {
+            if(0 == table->hash_table[i].bucket_data[j].value.bad_connections) {
+                // No bad connection, continue
+                continue;
+            }
+
+            printf("%d. Application with source_ip: ", (int)index);
+            print_ip(ntohl(table->hash_table[i].bucket_data[j].key.source_ip));
+            printf(" dest_ip: ");
+            print_ip(ntohl(table->hash_table[i].bucket_data[j].key.dest_ip));
+            printf(" dest_port: %d\n", ntohs(table->hash_table[i].bucket_data[j].key.dest_port));
+            printf("Amount of bad connections: %d \n", (int)table->hash_table[i].bucket_data[j].value.bad_connections);
+            printf("List of source ports of bad connections:\n");
+            
             for(size_t p = 0; p < TCP_PORT_MAX; ++p) {
                 // The connection isn't established
                 if(PLACEHOLDER_STATE_NO_CONNECTION < 
                    table->hash_table[i].bucket_data[j].value.connections[p].timed_connection_state.connectin_state) {
-                       table->hash_table[i].bucket_data[j].value.bad_connections++;
-                   }
+                       printf("\t%d\n", ntohs(table->hash_table[i].bucket_data[j].value.connections[p].source_port));
+                }
             }
+            
+            ++index;
         }
     }
 
     return SUCCESS;
+
 }
 
 void free_table_buckets(applications_hash_table_t* const table) {

@@ -131,6 +131,25 @@ INNER_STATUS insert(applications_hash_table_t* const        table,
     return SUCCESS;
 }
 
+INNER_STATUS update_bad_connections(applications_hash_table_t* const table) {
+    size_t bucket_size = 0;
+    for(size_t i = 0; i < HASH_TABLE_SIZE; ++i) {
+        // Read the bucket size. Best leave it here instead in the for statement because performace issues
+        bucket_size = table->hash_table[i].bucket_size;
+        for(size_t j = 0; j < bucket_size; ++j) {
+            for(size_t p = 0; p < TCP_PORT_MAX; ++p) {
+                // The connection isn't established
+                if(PLACEHOLDER_STATE_NO_CONNECTION < 
+                   table->hash_table[i].bucket_data[j].value.connections[p].timed_connection_state.connectin_state) {
+                       table->hash_table[i].bucket_data[j].value.bad_connections++;
+                   }
+            }
+        }
+    }
+
+    return SUCCESS;
+}
+
 void free_table_buckets(applications_hash_table_t* const table) {
     for(size_t i = 0; i < HASH_TABLE_SIZE; ++i) {
         if(NULL != table->hash_table[i].bucket_data && 

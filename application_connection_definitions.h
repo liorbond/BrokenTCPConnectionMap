@@ -74,7 +74,7 @@ INNER_STATUS get_connection(application_information_t* const       application_i
  * Create application stub and connection info from specified tcp packet
  * Params:
  *  [packet_info] - tcp/ip headersill contain the application stub
- *  [o_stub]      - OUT param w
+ *  [o_stub]      - OUT param will contain the application stub
  *  [o_conn_info] - OUT param will contain the connection info
  * Return:
  *  INNER_STATUS::SUCCESS if worked successfuly.
@@ -83,6 +83,16 @@ INNER_STATUS create_connection_info(const packet_info_t* const      packet_info,
                                     const struct pcap_pkthdr* const pcap_header,
                                     application_stub_t*             o_stub,
                                     specific_connection_info_t*     o_conn_info);
+
+/**
+ * Create defualyt application info
+ * Params:
+ *  [o_application_info] - Out
+ *  [o_stub]      - OUT param will contain the application_info
+ * Return:
+ *  INNER_STATUS::SUCCESS if worked successfuly.
+*/
+INNER_STATUS create_defualt_application_info(application_information_t* const o_application_info);
 
 
 #endif // __APPLICATION_CONNECTIONS_DEFINITIONS__

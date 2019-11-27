@@ -67,14 +67,13 @@ INNER_STATUS insert(applications_hash_table_t* const        table,
                     const specific_connection_info_t* const value);
 
 /** 
- * Updates each application bad_connection counter
+ * Prints the data regarding the bad connections from the table
  * Params:
  * [table] - The hash table
  * Return:
  *  INNER_STATUS::SUCCESS if worked successfuly.
 */
-INNER_STATUS update_bad_connections(applications_hash_table_t* const table);
-
+INNER_STATUS print_table(applications_hash_table_t* const table);
 
 /**
  * Free all table buckets

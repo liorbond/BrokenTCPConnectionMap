@@ -68,4 +68,6 @@ INNER_STATUS get_tcp_header   (unsigned char** io_packet,
                                bpf_u_int32*    io_packet_len,
                                struct tcphdr*  o_tcp_header);
 
+INNER_STATUS reverse_tcpip_headers(const packet_info_t* const packet_info, packet_info_t* o_packet_info);
+
 #endif // __PROTOCOL_HEADERS_PARSER__

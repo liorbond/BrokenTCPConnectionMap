@@ -2,6 +2,11 @@
 
 #include "packet_utils.h"
 #include "protocol_headers.h"
+#include "application_connection_definitions.h"
+
+
+#define OPTIONS_SIZE 20
+
 
 void print_ip(u_int32_t ip)
 {
@@ -37,4 +42,46 @@ void print_packet_header_handler(unsigned char*            args,
 
     count++;
     
+}
+
+void bad_connections_parser(applications_hash_table_t* application_table,
+                            const struct pcap_pkthdr*  header,
+                            const unsigned char*       packet) {
+
+    packet_info_t              packet_info;
+
+    // Avoid constness of packet
+    unsigned char* local_packet = (unsigned char*) packet;
+    bpf_u_int32*   local_length = (bpf_u_int32*)   &header->len;
+
+    static size_t  count        = 0;
+
+    count++;
+
+    if(SUCCESS == get_tcpip_headers(&local_packet, local_length, &packet_info)) {
+        // Skip data packet
+        if(OPTIONS_SIZE < *local_length) {
+              return;
+        }
+
+        // Skip tcp push
+        if(TH_PUSH == (TH_PUSH & packet_info.tcp_header.th_flags)) {
+            return;
+        }
+
+        // Skip window ack
+        if(TH_ACK == packet_info.tcp_header.th_flags && 1 < packet_info.tcp_header.th_ack) {
+            return;
+        }
+
+        if(SUCCESS != insert(application_table, &packet_info, header)) {
+            printf("%d ERROR: Failed inserting to the hash table\n", (int)count);
+            return;
+        }
+
+    } else {
+       // printf("ERROR: Failed packet length is: %d\n", header->len);
+    }
+
+
 }

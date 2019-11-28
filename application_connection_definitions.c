@@ -25,6 +25,11 @@ INNER_STATUS create_application_stub(const packet_info_t* const      packet_info
 INNER_STATUS create_connection_info(const packet_info_t* const      packet_info,
                                     const struct pcap_pkthdr* const pcap_header,
                                     specific_connection_info_t*     o_conn_info) {
+    if(TH_ACK == packet_info->tcp_header.th_flags) {
+        // Window ack, skip
+        return SKIP;
+    }
+ 
     if(TH_SYN != packet_info->tcp_header.th_flags) {
         printf("ERROR: First packet of connection isn't SYN\n");
         return FAILURE;
@@ -32,7 +37,7 @@ INNER_STATUS create_connection_info(const packet_info_t* const      packet_info,
 
     o_conn_info->source_port                            = packet_info->tcp_header.th_sport;
     o_conn_info->timed_connection_state.timestamp       = pcap_header->ts;
-    o_conn_info->timed_connection_state.connectin_state = STATE_TCP_SYN;
+    o_conn_info->timed_connection_state.connection_state = STATE_TCP_SYN;
 
     return SUCCESS;
 }
@@ -43,7 +48,7 @@ INNER_STATUS create_defualt_application_info(application_information_t* const ap
     for(size_t i = 0; i < TCP_PORT_MAX; ++i) {
         // Dummy specific_connection_info_t
         application_info->connections[i].source_port                             = 0;
-        application_info->connections[i].timed_connection_state.connectin_state  = STATE_TCP_ESTABLISHED;
+        application_info->connections[i].timed_connection_state.connection_state  = STATE_TCP_ESTABLISHED;
         application_info->connections[i].timed_connection_state.timestamp.tv_sec = 0;
         application_info->connections[i].timed_connection_state.timestamp.tv_sec = 0;
     }

@@ -26,7 +26,7 @@ INNER_STATUS pcap_walk(const char* const pcap_path,
     // loop infinitly (cnt = 0) and no need to extra params to callback (user = NULL)
     pcap_loop(pcap_handle, 0, handler, (u_char*)&applications_table);
 
-    print_table(&applications_table);
+    print_table_summary(&applications_table);
 
     return SUCCESS;    
 }

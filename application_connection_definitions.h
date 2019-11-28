@@ -69,19 +69,28 @@ typedef struct application_information {
 INNER_STATUS get_connection(application_information_t* const       application_info,
                             u_int16_t                              source_port,
                             specific_connection_info_t**           o_connection);
-
 /**
- * Create application stub and connection info from specified tcp packet
+ * Create application stub 
  * Params:
  *  [packet_info] - tcp/ip headersill contain the application stub
  *  [o_stub]      - OUT param will contain the application stub
+ * Return:
+ *  INNER_STATUS::SUCCESS if worked successfuly.
+*/
+INNER_STATUS create_application_stub(const packet_info_t* const      packet_info,
+                                     application_stub_t*             o_stub);
+
+/**
+ * Create connection info from specified tcp packet
+ * Params:
+ *  [packet_info] - tcp/ip headersill contain the application stub
+ *  [pcap_header] - Metadata of the connections
  *  [o_conn_info] - OUT param will contain the connection info
  * Return:
  *  INNER_STATUS::SUCCESS if worked successfuly.
 */
 INNER_STATUS create_connection_info(const packet_info_t* const      packet_info,
                                     const struct pcap_pkthdr* const pcap_header,
-                                    application_stub_t*             o_stub,
                                     specific_connection_info_t*     o_conn_info);
 
 /**

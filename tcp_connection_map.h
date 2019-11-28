@@ -56,15 +56,15 @@ INNER_STATUS get_value(applications_hash_table_t* const        table,
 /**
  * Inserts the key and the value to the hash table
  * Paramas:
- *  [table] - The hash table to search in
- *  [key]   - The key we are inserting
- *  [value] - The value we are inserting
+ *  [table]       - The hash table to search in
+ *  [packet_info] - The packet
+ *  [header]      - The metadata of the packet
  * Return:
  *  INNER_STATUS::SUCCESS if worked successfuly.
 */
-INNER_STATUS insert(applications_hash_table_t* const        table,
-                    const application_stub_t* const         key,           
-                    const specific_connection_info_t* const value);
+INNER_STATUS insert(applications_hash_table_t* const table,
+                    const packet_info_t* const       packet_info,           
+                    const struct pcap_pkthdr* const  header);
 
 /** 
  * Prints the data regarding the bad connections from the table
@@ -73,6 +73,8 @@ INNER_STATUS insert(applications_hash_table_t* const        table,
  * Return:
  *  INNER_STATUS::SUCCESS if worked successfuly.
 */
+INNER_STATUS print_table_summary(applications_hash_table_t* const table);
+
 INNER_STATUS print_table(applications_hash_table_t* const table);
 
 /**

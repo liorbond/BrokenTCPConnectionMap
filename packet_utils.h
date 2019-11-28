@@ -23,9 +23,9 @@ void print_packet_header_handler(u_char*                   args,
                                  const struct pcap_pkthdr* header,
                                  const unsigned char*      packet);
 
-void bad_connections_parser(u_char*                   args,
-                            const struct pcap_pkthdr* header,
-                            const unsigned char*      packet);
+void bad_connections_parser(applications_hash_table_t* application_table,
+                            const struct pcap_pkthdr*  header,
+                            const unsigned char*       packet);
                 
 
 

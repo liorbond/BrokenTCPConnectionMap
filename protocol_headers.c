@@ -71,7 +71,10 @@ INNER_STATUS get_ip_header    (unsigned char** io_packet,
     }
 
     // No need to memcpy_s since it's already checked
-    memcpy((void*)o_ip_header, (void*)*io_packet, sizeof(struct iphdr));
+    if(NULL == memcpy((void*)o_ip_header, (void*)*io_packet, sizeof(struct iphdr))) {
+        printf("ERROR: Failed to memcpy");
+        return FAILURE;
+    }
 
     *io_packet     += sizeof(struct iphdr);
     *io_packet_len -= sizeof(struct iphdr);
@@ -89,10 +92,28 @@ INNER_STATUS get_tcp_header   (unsigned char** io_packet,
     }
 
     // No need to memcpy_s since it's already checked
-    memcpy((void*)o_tcp_header, (void*)*io_packet, sizeof(struct tcphdr));
+    if(NULL == memcpy((void*)o_tcp_header, (void*)*io_packet, sizeof(struct tcphdr))) {
+        printf("ERROR: Failed to memcpy");
+        return FAILURE;
+    }
 
     *io_packet     += sizeof(struct tcphdr);
     *io_packet_len -= sizeof(struct tcphdr);
+
+    return SUCCESS;
+}
+
+INNER_STATUS reverse_tcpip_headers(const packet_info_t* const packet_info, packet_info_t* o_packet_info) {
+    if(NULL == memcpy(o_packet_info, packet_info, sizeof(packet_info_t))) {
+        printf("ERROR: Failed to memcpy");
+        return FAILURE;
+    }
+    
+    o_packet_info->ip_header.saddr     = packet_info->ip_header.daddr;
+    o_packet_info->ip_header.daddr     = packet_info->ip_header.saddr;
+
+    o_packet_info->tcp_header.th_sport = packet_info->tcp_header.th_dport;
+    o_packet_info->tcp_header.th_dport = packet_info->tcp_header.th_sport;
 
     return SUCCESS;
 }

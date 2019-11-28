@@ -13,17 +13,26 @@ INNER_STATUS get_connection(application_information_t* const application_info,
     return SUCCESS;
 }
 
-INNER_STATUS create_connection_info(const packet_info_t* const      packet_info,
-                                    const struct pcap_pkthdr* const pcap_header,
-                                    application_stub_t*             o_stub,
-                                    specific_connection_info_t*     o_conn_info) {
+INNER_STATUS create_application_stub(const packet_info_t* const      packet_info,
+                                     application_stub_t*             o_stub) {
     o_stub->source_ip = packet_info->ip_header.saddr;
     o_stub->dest_ip   = packet_info->ip_header.daddr;
     o_stub->dest_port = packet_info->tcp_header.th_dport;
 
+    return SUCCESS;
+}
+
+INNER_STATUS create_connection_info(const packet_info_t* const      packet_info,
+                                    const struct pcap_pkthdr* const pcap_header,
+                                    specific_connection_info_t*     o_conn_info) {
+    if(TH_SYN != packet_info->tcp_header.th_flags) {
+        printf("ERROR: First packet of connection isn't SYN\n");
+        return FAILURE;
+    }
+
     o_conn_info->source_port                            = packet_info->tcp_header.th_sport;
     o_conn_info->timed_connection_state.timestamp       = pcap_header->ts;
-    o_conn_info->timed_connection_state.connectin_state = STATE_TCP_ESTABLISHED; // Default state is ok (shouldn't be counted)
+    o_conn_info->timed_connection_state.connectin_state = STATE_TCP_SYN;
 
     return SUCCESS;
 }

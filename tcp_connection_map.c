@@ -348,9 +348,6 @@ INNER_STATUS print_table_summary(applications_hash_table_t* const table) {
             printf("List of source ports of bad connections:\n");
             
             for(size_t p = 0; p < TCP_PORT_MAX; ++p) {
-                if(p == ntohs(33273)) {
-                    printf("hi");
-                }
                 // The connection isn't established
                 if(PLACEHOLDER_STATE_NO_CONNECTION < 
                    table->hash_table[i].bucket_data[j].value.connections[p].timed_connection_state.connection_state) {

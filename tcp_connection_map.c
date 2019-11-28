@@ -151,6 +151,9 @@ INNER_STATUS insert(applications_hash_table_t* const        table,
             return FAILURE;
         }
 
+        bucket->bucket_data = (application_hash_table_node_t*)malloc((bucket->bucket_size + 1) *
+                                                                      sizeof(application_hash_table_node_t));
+        bucket->bucket_data[bucket->bucket_size].key                                   = *key;                                                              
         bucket->bucket_data[bucket->bucket_size].value.connections[value->source_port] = *value; 
         bucket->bucket_size++;
     }

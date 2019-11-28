@@ -8,7 +8,7 @@
 #define ARGUMENTS_ASKED        2
 
 void map_broken_tcp_connections(char* pcap_path) {
-    if(SUCCESS != pcap_walk(pcap_path, print_packet_header_handler)) {
+    if(SUCCESS != pcap_walk(pcap_path, bad_connections_parser)) {
         printf("ERROR: Failed to map the pcap file %s\n", pcap_path);
         return;
     }

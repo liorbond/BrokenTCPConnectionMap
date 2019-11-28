@@ -43,12 +43,12 @@ INNER_STATUS get_tcpip_headers(unsigned char** io_packet,
     }
 
     if(IPVERSION != o_packet_info->ip_header.version) {
-         printf("NOTICE: Bad IP version (Probably ARP Packet)\n");
+        //printf("NOTICE: Bad IP version (Probably ARP Packet)\n");
         return FAILURE;
     }
 
     if(TCP_PROTO_NUM != o_packet_info->ip_header.protocol) {
-        printf("NOTICE: Skipping non tcp protocol (Probably DNS Packet)\n");
+        //printf("NOTICE: Skipping non tcp protocol (Probably DNS Packet)\n");
         return FAILURE;
     }
 
@@ -66,7 +66,7 @@ INNER_STATUS get_ip_header    (unsigned char** io_packet,
                                struct iphdr*   o_ip_header) {
     if(sizeof(struct iphdr) > *io_packet_len) {
 
-        printf("NOTICE: Skipping non ip packet\n");
+        //printf("NOTICE: Skipping non ip packet\n");
         return FAILURE;
     }
 
@@ -84,7 +84,7 @@ INNER_STATUS get_tcp_header   (unsigned char** io_packet,
                                struct tcphdr*  o_tcp_header) {
     if(sizeof(struct tcphdr) > *io_packet_len) {
 
-        printf("NOTICE: Skipping non tcp packet\n");
+        //printf("NOTICE: Skipping non tcp packet\n");
         return FAILURE;
     }
 

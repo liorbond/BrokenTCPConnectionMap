@@ -10,6 +10,7 @@
 */
 typedef enum INNER_STATUS {
     SUCCESS,
+    SKIP,
     FAILURE
 } INNER_STATUS;
 

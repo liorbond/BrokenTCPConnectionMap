@@ -58,19 +58,18 @@ void bad_connections_parser(applications_hash_table_t* application_table,
 
     count++;
 
+    if(count == 96) {
+        printf("hi");
+    }
+
     if(SUCCESS == get_tcpip_headers(&local_packet, local_length, &packet_info)) {
         // Skip data packet
         if(OPTIONS_SIZE < *local_length) {
-              return;
+            return;
         }
 
         // Skip tcp push
         if(TH_PUSH == (TH_PUSH & packet_info.tcp_header.th_flags)) {
-            return;
-        }
-
-        // Skip window ack
-        if(TH_ACK == packet_info.tcp_header.th_flags && 1 < packet_info.tcp_header.th_ack) {
             return;
         }
 

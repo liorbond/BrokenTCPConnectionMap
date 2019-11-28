@@ -31,7 +31,7 @@ typedef struct application_stub {
 */
 typedef struct connection_state {
     struct timeval       timestamp;
-    TCP_CONNECTION_STATE connectin_state;
+    TCP_CONNECTION_STATE connection_state;
 } connection_state_t;
 
 /**

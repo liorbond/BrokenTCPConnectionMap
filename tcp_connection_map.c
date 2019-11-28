@@ -3,6 +3,7 @@
 #include "tcp_connection_map.h"
 #include "packet_utils.h"
 #include "application_connection_definitions.h"
+#include "connection_state_machine.h"
 
 /**
  * Hash function
@@ -70,7 +71,7 @@ INNER_STATUS update_bad_connections(applications_hash_table_t* const table) {
             for(size_t p = 0; p < TCP_PORT_MAX; ++p) {
                 // The connection isn't established
                 if(PLACEHOLDER_STATE_NO_CONNECTION < 
-                   table->hash_table[i].bucket_data[j].value.connections[p].timed_connection_state.connectin_state) {
+                   table->hash_table[i].bucket_data[j].value.connections[p].timed_connection_state.connection_state) {
                        table->hash_table[i].bucket_data[j].value.bad_connections++;
                 }
             }
@@ -193,8 +194,13 @@ INNER_STATUS insert(applications_hash_table_t* const table,
     // Stub wasn't in the table before
     if(NULL == bucket->bucket_data) {
         specific_connection_info_t value;
+        INNER_STATUS status =  create_connection_info(packet_info, header, &value);
+        
+        if(SKIP == status) {
+            return SUCCESS;
+        }
 
-        if(SUCCESS != create_connection_info(packet_info, header, &value)) {
+        if(FAILURE == status) {
             // Logged @ function
             return FAILURE;
         }
@@ -217,22 +223,45 @@ INNER_STATUS insert(applications_hash_table_t* const table,
             
             if(TRUE == _key_compare(&bucket->bucket_data[i].key, key)) {
                 if(0 ==
-                   bucket->bucket_data[bucket->bucket_size].value.connections[packet_info->tcp_header.th_sport].source_port) {
+                   bucket->bucket_data[i].value.connections[packet_info->tcp_header.th_sport].source_port) {
                     
                     specific_connection_info_t value;
+                    INNER_STATUS               status = create_connection_info(packet_info, header, &value);
 
-                    if(SUCCESS != create_connection_info(packet_info, header, &value)) {
+                    if(FAILURE == status) {
                         // Logged @ function
                         return FAILURE;
                     }
 
-                    bucket->bucket_data[bucket->bucket_size].value.connections[value.source_port] = value;       
+                    if(SKIP == status) {
+                        return SUCCESS;
+                    }
+
+                    bucket->bucket_data[i].value.connections[value.source_port] = value;
                 } else {
-                    // TODO: update status
+                    if (SUCCESS != advance_state(header, 
+                                                 packet_info, 
+                                                 &bucket->bucket_data[i].value, 
+                                                 &bucket->bucket_data[i].value.connections[packet_info->tcp_header.th_sport].timed_connection_state)) {
+                        // Logged @ function
+                        return FAILURE;
+                    }
                 }
                 
                 return SUCCESS;
             }
+        }
+
+        specific_connection_info_t value; 
+        INNER_STATUS               status = create_connection_info(packet_info, header, &value);
+
+        if(SKIP == status) {
+            return SUCCESS;
+        }
+
+        if(FAILURE == status) {
+            // Logged @ function
+            return FAILURE;
         }
 
         if(bucket->bucket_size >= HASH_TABLE_SIZE - 1)
@@ -249,12 +278,6 @@ INNER_STATUS insert(applications_hash_table_t* const table,
             return FAILURE;
         }
 
-        specific_connection_info_t value;
-
-        if(SUCCESS != create_connection_info(packet_info, header, &value)) {
-            // Logged @ function
-            return FAILURE;
-        } 
 
         bucket->bucket_data[bucket->bucket_size].key                                   = *key;                                                              
         bucket->bucket_data[bucket->bucket_size].value.connections[value.source_port]  = value; 
@@ -325,9 +348,12 @@ INNER_STATUS print_table_summary(applications_hash_table_t* const table) {
             printf("List of source ports of bad connections:\n");
             
             for(size_t p = 0; p < TCP_PORT_MAX; ++p) {
+                if(p == ntohs(33273)) {
+                    printf("hi");
+                }
                 // The connection isn't established
                 if(PLACEHOLDER_STATE_NO_CONNECTION < 
-                   table->hash_table[i].bucket_data[j].value.connections[p].timed_connection_state.connectin_state) {
+                   table->hash_table[i].bucket_data[j].value.connections[p].timed_connection_state.connection_state) {
                        printf("\t%d\n", ntohs(table->hash_table[i].bucket_data[j].value.connections[p].source_port));
                 }
             }
